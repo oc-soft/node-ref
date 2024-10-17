@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
+#include <cstring>
 
 #include "node.h"
 #include "node_buffer.h"
@@ -49,6 +49,7 @@ inline int64_t GetInt64(Local<Value> value) {
  *
  * info[0] - Buffer - the Buffer instance get the memory address of
  * info[1] - Number - optional (0) - the offset of the Buffer start at
+ * info[2] - Boolean - optional (false) - interpret the content as pointer if true.
  */
 
 NAN_METHOD(Address) {
@@ -59,8 +60,19 @@ NAN_METHOD(Address) {
   }
 
   int64_t offset = GetInt64(info[1]);
-  char *ptr = Buffer::Data(buf.As<Object>()) + offset;
-  uintptr_t intptr = (uintptr_t)ptr;
+  uintptr_t intptr = NULL;
+  bool external = false;
+  if (info.Length() > 2) {
+    external = info[2]->ToBoolean(info.GetIsolate())->IsTrue();
+  }
+  if (!external) {
+    char *ptr = Buffer::Data(buf.As<Object>()) + offset;
+    intptr = reinterpret_cast<uintptr_t>(ptr);
+  } else {
+    uintptr_t *ptrRef = reinterpret_cast<uintptr_t*>(
+      Buffer::Data(buf.As<Object>()) + offset);
+    intptr = *ptrRef;
+  }
   Local<Number> rtn = Nan::New(static_cast<double>(intptr));
 
   info.GetReturnValue().Set(rtn);
@@ -73,7 +85,8 @@ NAN_METHOD(Address) {
  *
  * info[0] - Buffer - the Buffer instance get the memory address of
  * info[1] - Number - optional (0) - the offset of the Buffer start at
- */
+ * info[2] - Boolean - optional (false) - interpret the content as pointer if true.
+  */
 
 NAN_METHOD(HexAddress) {
 
@@ -83,7 +96,18 @@ NAN_METHOD(HexAddress) {
   }
 
   int64_t offset = GetInt64(info[1]);
-  char *ptr = Buffer::Data(buf.As<Object>()) + offset;
+  char *ptr = nullptr;
+  bool external = false;
+  if (info.Length() > 2) {
+    external = info[2]->ToBoolean(info.GetIsolate())->IsTrue();
+  }
+  if (!external) {
+    ptr = Buffer::Data(buf.As<Object>()) + offset;
+  } else {
+    char **ptrRef = reinterpret_cast<char **>(
+      Buffer::Data(buf.As<Object>()) + offset);
+    ptr = *ptrRef;
+  }
   char strbuf[30]; /* should be plenty... */
   snprintf(strbuf, 30, "%p", ptr);
 
@@ -103,7 +127,8 @@ NAN_METHOD(HexAddress) {
  *
  * info[0] - Buffer - the Buffer instance to check for NULL
  * info[1] - Number - optional (0) - the offset of the Buffer start at
- */
+ * info[2] - Boolean - optional (false) - interpret the content as pointer if true.
+  */
 
 NAN_METHOD(IsNull) {
 
@@ -221,7 +246,7 @@ NAN_METHOD(WriteObject) {
 
 #if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 ||                      \
   (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION >= 3))
-  bool persistent = info[3]->BooleanValue(v8::Isolate::GetCurrent());
+  bool persistent = info[3]->BooleanValue(info.GetIsolate()->GetCurrent());
 #else
   bool persistent = info[3]->BooleanValue();
 #endif
@@ -231,7 +256,7 @@ NAN_METHOD(WriteObject) {
     void *user_data = NULL;
     Nan::Persistent<Object> p2(val);
     p2.SetWeak(user_data, write_object_cb, Nan::WeakCallbackType::kParameter);
-    memcpy(pptr, &p2, sizeof(Nan::Persistent<Object>));
+    std::memcpy(pptr, &p2, sizeof(Nan::Persistent<Object>));
   }
 
   info.GetReturnValue().SetUndefined();
@@ -243,7 +268,8 @@ NAN_METHOD(WriteObject) {
  *
  * info[0] - Buffer - the "buf" Buffer instance to read from
  * info[1] - Number - the offset from the "buf" buffer's address to read from
- * info[2] - Number - the length in bytes of the returned SlowBuffer instance
+ * info[2] - Number - the length in bytes of the returned SlowBuffer instance. it is ignored if extenal flag true
+ * info[3] - Boolean - the flag whether the pointer is in external or sandbox
  */
 
 NAN_METHOD(ReadPointer) {
@@ -255,7 +281,7 @@ NAN_METHOD(ReadPointer) {
 
   int64_t offset = GetInt64(info[1]);
   char *ptr = Buffer::Data(buf.As<Object>()) + offset;
-  v8::Isolate *isolate = v8::Isolate::GetCurrent();
+  v8::Isolate *isolate = info.GetIsolate();
 #if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 ||                      \
   (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION > 3))
   size_t size = info[2]->Uint32Value(isolate->GetCurrentContext()).FromJust();
@@ -263,12 +289,24 @@ NAN_METHOD(ReadPointer) {
   size_t size = info[2]->Uint32Value();
 #endif
 
+  bool external = false;
+  if (info.Length() > 3) {
+    external = info[3]->ToBoolean(isolate)->IsTrue();
+  }
   if (ptr == NULL) {
     return Nan::ThrowError("readPointer: Cannot read from NULL pointer");
   }
 
   char *val = *reinterpret_cast<char **>(ptr);
-  info.GetReturnValue().Set(WrapPointer(val, size));
+  if (!external) {
+    info.GetReturnValue().Set(WrapPointer(val, size));
+  } else {
+    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, sizeof(void*));
+    char** destPtr = reinterpret_cast<char **>(ab->Data());
+    *destPtr = val;
+    MaybeLocal<Uint8Array> ret = Buffer::New(isolate, ab, 0, sizeof(void*));
+    info.GetReturnValue().Set(ret.ToLocalChecked());
+  }
 }
 
 /*
@@ -279,6 +317,7 @@ NAN_METHOD(ReadPointer) {
  * info[0] - Buffer - the "buf" Buffer instance to write to
  * info[1] - Number - the offset from the "buf" buffer's address to write to
  * info[2] - Buffer - the "input" Buffer whose memory address will be written
+ * info[3] - Boolean - the way to convert buf to pointer
  */
 
 NAN_METHOD(WritePointer) {
@@ -294,11 +333,28 @@ NAN_METHOD(WritePointer) {
 
   int64_t offset = GetInt64(info[1]);
   char *ptr = Buffer::Data(buf.As<Object>()) + offset;
+  bool external = false;
+  if (info.Length() > 3) {
+    external = info[3]->ToBoolean(info.GetIsolate())->IsTrue();
+  }
+ 
 
   if (input->IsNull()) {
     *reinterpret_cast<char **>(ptr) = NULL;
   } else {
-    char *input_ptr = Buffer::Data(input.As<Object>());
+    char *input_ptr = nullptr;
+    if (!external) {
+      input_ptr = Buffer::Data(input.As<Object>());
+    } else {
+      Local<Uint8Array> ptrArray = Local<Uint8Array>::Cast(input);
+      if (ptrArray->ByteLength() > sizeof(void*)) {
+        unsigned char* ptr = reinterpret_cast<unsigned char*>(
+          ptrArray->Buffer()->Data());
+          ptr += ptrArray->ByteOffset();
+        char** ptrRef = reinterpret_cast<char **>(ptr);
+        input_ptr = *ptrRef;
+      } 
+    }
     *reinterpret_cast<char **>(ptr) = input_ptr;
   }
 
@@ -464,10 +520,10 @@ NAN_METHOD(WriteUInt64) {
 
 #if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 6 ||                      \
   (V8_MAJOR_VERSION == 6 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION > 2))
-    String::Utf8Value _str(v8::Isolate::GetCurrent(), in);
+    String::Utf8Value _str(info.GetIsolate(), in);
 #else
     String::Utf8Value _str(in);
-#endif:
+#endif
     str = *_str;
 
     errno = 0;     /* To distinguish success/failure after call */
@@ -543,7 +599,7 @@ NAN_METHOD(ReinterpretBuffer) {
 
 #if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 ||                      \
   (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION > 3))
-  v8::Isolate *isolate = v8::Isolate::GetCurrent();
+  v8::Isolate *isolate = info.GetIsolate();
   size_t size = info[1]->Uint32Value(isolate->GetCurrentContext()).FromJust();
 #else
   size_t size = info[1]->Uint32Value();
@@ -578,7 +634,7 @@ NAN_METHOD(ReinterpretBufferUntilZeros) {
 
 #if defined(V8_MAJOR_VERSION) && (V8_MAJOR_VERSION > 4 ||                      \
   (V8_MAJOR_VERSION == 4 && defined(V8_MINOR_VERSION) && V8_MINOR_VERSION > 3))
-  v8::Isolate *isolate = v8::Isolate::GetCurrent();
+  v8::Isolate *isolate = info.GetIsolate();
   uint32_t numZeros = info[1]->Uint32Value(
     isolate->GetCurrentContext()).FromJust();
 #else
