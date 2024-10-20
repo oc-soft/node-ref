@@ -7,8 +7,8 @@ describe('reinterpret()', function () {
 
   beforeEach(gc)
 
-  it('should return a new Buffer instance at the same address', function () {
-    var buf = new Buffer('hello world')
+  it('should return a Buffer instance at the same address', function () {
+    var buf = Buffer.from('hello world')
     var small = buf.slice(0, 0)
     assert.strictEqual(0, small.length)
     assert.strictEqual(buf.address(), small.address())
@@ -18,8 +18,8 @@ describe('reinterpret()', function () {
     assert.strictEqual(buf.toString(), reinterpreted.toString())
   })
   
-  it('should return a new Buffer instance starting at the offset address', function () {
-    var buf = new Buffer('hello world')
+  it('should return a Buffer instance starting at the offset address', function () {
+    var buf = Buffer.from('hello world')
     var offset = 3
     var small = buf.slice(offset, buf.length)
     assert.strictEqual(buf.length - offset, small.length)
@@ -33,7 +33,7 @@ describe('reinterpret()', function () {
   it('should retain a reference to the original Buffer when reinterpreted', function () {
     var origGCd = false
     var otherGCd = false
-    var buf = new Buffer(1)
+    var buf = Buffer.alloc(1)
     weak(buf, function () { origGCd = true })
     var other = buf.reinterpret(0)
     weak(other, function () { otherGCd = true })

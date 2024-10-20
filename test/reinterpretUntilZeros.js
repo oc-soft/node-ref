@@ -8,23 +8,23 @@ describe('reinterpretUntilZeros()', function () {
 
   beforeEach(gc)
 
-  it('should return a new Buffer instance up until the first 0', function () {
-    var buf = new Buffer('hello\0world')
+  it('should return a Buffer instance up until the first 0', function () {
+    var buf = Buffer.from('hello\0world')
     var buf2 = buf.reinterpretUntilZeros(1)
     assert.equal(buf2.length, 'hello'.length)
     assert.equal(buf2.toString(), 'hello')
   })
   
-  it('should return a new Buffer instance up until the first 0 starting from offset', function () {
-    var buf = new Buffer('hello\0world')
+  it('should return a Buffer instance up until the first 0 starting from offset', function () {
+    var buf = Buffer.from('hello\0world')
     var buf2 = buf.reinterpretUntilZeros(1, 3)
     assert.equal(buf2.length, 'lo'.length)
     assert.equal(buf2.toString(), 'lo')
   })  
 
-  it('should return a new Buffer instance up until the first 2-byte sequence of 0s', function () {
+  it('should return a Buffer instance up until the first 2-byte sequence of 0s', function () {
     var str = 'hello world'
-    var buf = new Buffer(50)
+    var buf = Buffer.alloc(50)
     var len = buf.write(str, 'ucs2')
     buf.writeInt16LE(0, len) // NULL terminate the string
 

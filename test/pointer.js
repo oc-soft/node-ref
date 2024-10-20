@@ -5,12 +5,12 @@ var ref = require('../')
 
 describe('pointer', function () {
 
-  var test = new Buffer('hello world')
+  var test = Buffer.from('hello world')
 
   beforeEach(gc)
 
   it('should write and read back a pointer (Buffer) in a Buffer', function () {
-    var buf = new Buffer(ref.sizeof.pointer)
+    var buf = Buffer.alloc(ref.sizeof.pointer)
     ref.writePointer(buf, 0, test)
     var out = ref.readPointer(buf, 0, test.length)
     assert.strictEqual(out.length, test.length)
@@ -23,8 +23,8 @@ describe('pointer', function () {
   it('should retain references to a written pointer in a Buffer', function (done) {
     var child_gc = false
     var parent_gc = false
-    var child = new Buffer('a pointer holding some data...')
-    var parent = new Buffer(ref.sizeof.pointer)
+    var child = Buffer.from('a pointer holding some data...')
+    var parent = Buffer.alloc(ref.sizeof.pointer)
 
     weak(child, function () { child_gc = true })
     weak(parent, function () { parent_gc = true })
@@ -55,7 +55,7 @@ describe('pointer', function () {
   })
 
   it('should return a 0-length Buffer when reading a NULL pointer', function () {
-    var buf = new Buffer(ref.sizeof.pointer)
+    var buf = Buffer.alloc(ref.sizeof.pointer)
     ref.writePointer(buf, 0, ref.NULL)
     var out = ref.readPointer(buf, 0, 100)
     assert.strictEqual(out.length, 0)
@@ -64,9 +64,9 @@ describe('pointer', function () {
   describe('offset', function () {
 
     it('should read two pointers next to each other in memory', function () {
-      var buf = new Buffer(ref.sizeof.pointer * 2)
-      var a = new Buffer('hello')
-      var b = new Buffer('world')
+      var buf = Buffer.alloc(ref.sizeof.pointer * 2)
+      var a = Buffer.from('hello')
+      var b = Buffer.from('world')
       buf.writePointer(a, 0 * ref.sizeof.pointer)
       buf.writePointer(b, 1 * ref.sizeof.pointer)
       var _a = buf.readPointer(0 * ref.sizeof.pointer)

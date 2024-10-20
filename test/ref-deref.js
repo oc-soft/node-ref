@@ -7,7 +7,7 @@ describe('ref(), deref()', function () {
   beforeEach(gc)
 
   it('should work 1 layer deep', function () {
-    var test = new Buffer('one layer deep')
+    var test = Buffer.from('one layer deep')
     var one = ref.ref(test)
     var _test = ref.deref(one)
     assert.equal(test.length, _test.length)
@@ -15,7 +15,7 @@ describe('ref(), deref()', function () {
   })
 
   it('should work 2 layers deep', function () {
-    var test = new Buffer('two layers deep')
+    var test = Buffer.from('two layers deep')
     var one = ref.ref(test)
     var two = ref.ref(one)
     var _one = ref.deref(two)
@@ -28,14 +28,14 @@ describe('ref(), deref()', function () {
   })
 
   it('should throw when derefing a Buffer with no "type"', function () {
-    var test = new Buffer('???')
+    var test = Buffer.from('???')
     assert.throws(function () {
       ref.deref(test)
     }, /unknown "type"/)
   })
 
   it('should throw when derefing a Buffer with no "type" 2', function () {
-    var test = new Buffer('???')
+    var test = Buffer.from('???')
     var r = ref.ref(test)
     var _test = ref.deref(r)
     assert.equal(ref.address(test), ref.address(_test))
@@ -45,7 +45,7 @@ describe('ref(), deref()', function () {
   })
 
   it('should deref() a "char" type properly', function () {
-    var test = new Buffer(ref.sizeof.char)
+    var test = Buffer.alloc(ref.sizeof.char)
     test.type = ref.types.char
     test[0] = 50
     assert.equal(50, ref.deref(test))

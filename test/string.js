@@ -7,12 +7,12 @@ describe('C string', function () {
   describe('readCString()', function () {
 
     it('should return "" for a Buffer containing "\\0"', function () {
-      var buf = new Buffer('\0')
+      var buf = Buffer.from('\0')
       assert.strictEqual('', buf.readCString(0))
     })
 
     it('should return "hello" for a Buffer containing "hello\\0world"', function () {
-      var buf = new Buffer('hello\0world')
+      var buf = Buffer.from('hello\0world')
       assert.strictEqual('hello', buf.readCString(0))
     })
 
@@ -27,7 +27,7 @@ describe('C string', function () {
   describe('writeCString()', function () {
 
     it('should write a C string (NULL terminated) to a Buffer', function () {
-      var buf = new Buffer(20)
+      var buf = Buffer.alloc(20)
       var str = 'hello world'
       buf.writeCString(str)
       for (var i = 0; i < str.length; i++) {
@@ -40,7 +40,7 @@ describe('C string', function () {
 
   describe('allocCString()', function () {
 
-    it('should return a new Buffer containing the given string', function () {
+    it('should return a Buffer containing the given string', function () {
       var buf = ref.allocCString('hello world')
       assert.strictEqual('hello world', buf.readCString())
     })
@@ -79,14 +79,14 @@ describe('C string', function () {
     it('should read a utf8 string from a Buffer', function () {
       var str = 'hello world'
       var buf = ref.alloc(ref.types.CString)
-      buf.writePointer(new Buffer(str + '\0'))
+      buf.writePointer(Buffer.from(str + '\0'))
       assert.strictEqual(str, buf.deref())
     })
 
     // https://github.com/node-ffi/node-ffi/issues/169
     it('should set a Buffer as backing store', function () {
       var str = 'hey!'
-      var store = new Buffer(str + '\0')
+      var store = Buffer.from(str + '\0')
       var buf = ref.alloc(ref.types.CString)
       ref.set(buf, 0, store)
 

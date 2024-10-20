@@ -16,7 +16,7 @@ describe('coerce', function () {
   })
 
   it('should coerce the "type" property of a Buffer', function () {
-    var buf = new Buffer(ref.sizeof.int)
+    var buf = Buffer.alloc(ref.sizeof.int)
     buf.type = 'int'
     var type = ref.getType(buf)
     assert.strictEqual(ref.types.int, type)
@@ -28,13 +28,13 @@ describe('coerce', function () {
   })
 
   it('should coerce the optional type in `ref.get()`', function () {
-    var b = new Buffer(ref.sizeof.int8)
+    var b = Buffer.alloc(ref.sizeof.int8)
     b[0] = 5
     assert.strictEqual(5, ref.get(b, 0, 'int8'))
   })
 
   it('should coerce the optional type in `ref.set()`', function () {
-    var b = new Buffer(ref.sizeof.int8)
+    var b = Buffer.alloc(ref.sizeof.int8)
     ref.set(b, 0, 5, 'int8')
     assert.strictEqual(5, b[0])
   })

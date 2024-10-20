@@ -3,12 +3,12 @@ var weak = require('weak')
 var ref = require('../')
 
 describe('pointer-external', function() {
-  var test = new Buffer('hello world')
+  var test = Buffer.from('hello world')
 
   beforeEach(gc)
 
   it('should write and read back a pointer (Buffer) in a Buffer', function () {
-    var buf = new Buffer(ref.sizeof.pointer)
+    var buf = Buffer.alloc(ref.sizeof.pointer)
     ref.writePointer(buf, 0, test)
     var out = ref.readPointer(buf, 0, test.length, true)
     assert.strictEqual(ref.address(out, 0, true), ref.address(test))
@@ -17,8 +17,8 @@ describe('pointer-external', function() {
   it('should retain references to a written pointer in a Buffer', function (done) {
     var child_gc = false
     var parent_gc = false
-    var child = new Buffer('a pointer holding some data...')
-    var parent = new Buffer(ref.sizeof.pointer)
+    var child = Buffer.from('a pointer holding some data...')
+    var parent = Buffer.alloc(ref.sizeof.pointer)
 
     weak(child, function () { child_gc = true })
     weak(parent, function () { parent_gc = true })
@@ -44,7 +44,7 @@ describe('pointer-external', function() {
 
 
   it('should return a pointer length Buffer when reading a NULL pointer', function () {
-    var buf = new Buffer(ref.sizeof.pointer)
+    var buf = Buffer.alloc(ref.sizeof.pointer)
     ref.writePointer(buf, 0, ref.NULL, true)
     var out = ref.readPointer(buf, 0, 100, true)
     assert.strictEqual(out.length, ref.sizeof.pointer)
@@ -53,9 +53,9 @@ describe('pointer-external', function() {
   describe('offset', function () {
 
     it('should read two pointers next to each other in memory', function () {
-      var buf = new Buffer(ref.sizeof.pointer * 2)
-      var a = new Buffer('hello')
-      var b = new Buffer('world')
+      var buf = Buffer.alloc(ref.sizeof.pointer * 2)
+      var a = Buffer.from('hello')
+      var b = Buffer.from('world')
       buf.writePointer(a, 0 * ref.sizeof.pointer)
       buf.writePointer(b, 1 * ref.sizeof.pointer)
       var _a = buf.readPointer(0 * ref.sizeof.pointer, true)
@@ -66,11 +66,11 @@ describe('pointer-external', function() {
   })
 
   it('expects original pointer equals external pointer from buffer', function() {
-      var buf = new Buffer(ref.sizeof.pointer * 2)
-      var a0 = new Buffer('hello')
-      var b0 = new Buffer('world')
-      var a = new Buffer(ref.sizeof.pointer)
-      var b = new Buffer(ref.sizeof.pointer)
+      var buf = Buffer.alloc(ref.sizeof.pointer * 2)
+      var a0 = Buffer.from('hello')
+      var b0 = Buffer.from('world')
+      var a = Buffer.alloc(ref.sizeof.pointer)
+      var b = Buffer.alloc(ref.sizeof.pointer)
       a.writePointer(a0, true)
       b.writePointer(b0, 0, true)
       buf.writePointer(a, 0 * ref.sizeof.pointer, true)

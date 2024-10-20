@@ -4,7 +4,7 @@ var inspect = require('util').inspect
 
 describe('address', function () {
 
-  var buf = new Buffer('hello')
+  var buf = Buffer.from('hello')
 
   it('should return 0 for the NULL pointer', function () {
     assert.strictEqual(0, ref.address(ref.NULL))

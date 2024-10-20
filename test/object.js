@@ -14,7 +14,7 @@ describe('Object', function () {
   beforeEach(gc)
 
   it('should write and read back an Object in a Buffer', function () {
-    var buf = new Buffer(ref.sizeof.Object)
+    var buf = Buffer.alloc(ref.sizeof.Object)
     ref.writeObject(buf, 0, obj)
     var out = ref.readObject(buf)
     assert.strictEqual(obj, out)
@@ -25,7 +25,7 @@ describe('Object', function () {
     var o_gc = false
     var buf_gc = false
     var o = { foo: 'bar' }
-    var buf = new Buffer(ref.sizeof.Object)
+    var buf = Buffer.alloc(ref.sizeof.Object)
 
     weak(o, function () { o_gc = true })
     weak(buf, function () { buf_gc = true })
@@ -58,7 +58,7 @@ describe('Object', function () {
   describe('offset', function () {
 
     it('should read two Objects next to each other in memory', function () {
-      var buf = new Buffer(ref.sizeof.pointer * 2)
+      var buf = Buffer.alloc(ref.sizeof.pointer * 2)
       var a = {}
       var b = {}
       buf.writeObject(a, 0 * ref.sizeof.pointer)

@@ -9,7 +9,7 @@ describe('isNull', function () {
   })
 
   it('should return "false" for a valid Buffer', function () {
-    var buf = new Buffer('hello')
+    var buf = Buffer.from('hello')
     assert.strictEqual(false, ref.isNull(buf))
   })
 
