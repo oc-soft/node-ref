@@ -60,7 +60,7 @@ NAN_METHOD(Address) {
   }
 
   int64_t offset = GetInt64(info[1]);
-  uintptr_t intptr = NULL;
+  uintptr_t intptr = 0;
   bool external = false;
   if (info.Length() > 2) {
     external = info[2]->ToBoolean(info.GetIsolate())->IsTrue();
@@ -330,34 +330,40 @@ NAN_METHOD(WritePointer) {
   if (!(input->IsNull() || Buffer::HasInstance(input))) {
     return Nan::ThrowTypeError("writePointer: Buffer instance expected as third argument");
   }
+  Local<Uint8Array> destArray = Local<Uint8Array>::Cast(buf);
 
   int64_t offset = GetInt64(info[1]);
-  char *ptr = Buffer::Data(buf.As<Object>()) + offset;
+
   bool external = false;
   if (info.Length() > 3) {
     external = info[3]->ToBoolean(info.GetIsolate())->IsTrue();
   }
  
-
-  if (input->IsNull()) {
-    *reinterpret_cast<char **>(ptr) = NULL;
-  } else {
-    char *input_ptr = nullptr;
-    if (!external) {
-      input_ptr = Buffer::Data(input.As<Object>());
+  if (destArray->ByteLength() >= sizeof(void*) + destArray->ByteOffset()) {
+    char *ptr = Buffer::Data(buf.As<Object>()) + offset;
+    if (input->IsNull()) {
+      *reinterpret_cast<char **>(ptr) = nullptr;
     } else {
-      Local<Uint8Array> ptrArray = Local<Uint8Array>::Cast(input);
-      if (ptrArray->ByteLength() > sizeof(void*)) {
-        unsigned char* ptr = reinterpret_cast<unsigned char*>(
-          ptrArray->Buffer()->Data());
-          ptr += ptrArray->ByteOffset();
-        char** ptrRef = reinterpret_cast<char **>(ptr);
-        input_ptr = *ptrRef;
-      } 
+      char *input_ptr = nullptr;
+      if (!external) {
+        input_ptr = Buffer::Data(input.As<Object>());
+      } else {
+        Local<Uint8Array> ptrArray = Local<Uint8Array>::Cast(input);
+        size_t byteLength = ptrArray->ByteLength();
+        size_t endLength = sizeof(void*) + ptrArray->ByteOffset();
+        if (byteLength >= endLength) {
+          unsigned char* ptr = reinterpret_cast<unsigned char*>(
+            ptrArray->Buffer()->Data());
+            ptr += ptrArray->ByteOffset();
+          char** ptrRef = reinterpret_cast<char **>(ptr);
+          input_ptr = *ptrRef;
+        }
+      }
+      *reinterpret_cast<char **>(ptr) = input_ptr;
     }
-    *reinterpret_cast<char **>(ptr) = input_ptr;
+  } else {
+    Nan::ThrowError("writePointer: offset + pointer size must be less than equals buffer size");
   }
-
   info.GetReturnValue().SetUndefined();
 }
 

@@ -22,7 +22,7 @@ describe('pointer-external', function() {
 
     weak(child, function () { child_gc = true })
     weak(parent, function () { parent_gc = true })
-    ref.writePointer(parent, 0, child, true)
+    ref.writePointer(parent, 0, child)
     assert(!child_gc, '"child" has been garbage collected too soon')
     assert(!parent_gc, '"parent" has been garbage collected too soon')
 
@@ -71,13 +71,14 @@ describe('pointer-external', function() {
       var b0 = Buffer.from('world')
       var a = Buffer.alloc(ref.sizeof.pointer)
       var b = Buffer.alloc(ref.sizeof.pointer)
-      a.writePointer(a0, true)
-      b.writePointer(b0, 0, true)
+      a.writePointer(a0)
+      b.writePointer(b0, 0)
+
       buf.writePointer(a, 0 * ref.sizeof.pointer, true)
       buf.writePointer(b, 1 * ref.sizeof.pointer, true)
       var _a = buf.readPointer(0 * ref.sizeof.pointer, true)
       var _b = buf.readPointer(1 * ref.sizeof.pointer, 0, true)
-      assert.equal(a.address(), _a.address(true))
-      assert.equal(b.address(), _b.address(true))
+      assert.equal(a0.address(), _a.address(true))
+      assert.equal(b0.address(), _b.address(true))
   })
 })
