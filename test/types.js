@@ -41,6 +41,11 @@ describe('types', function () {
       assert.equal(newProp.writable, true)
       assert.equal(newObj.name, 'StructType*')
     })
+    it('should return a pointer type with external attribute', function() {
+      var externalPtr = ref.coerceType('external')
+      assert.equal(2, externalPtr.indirection)
+      assert.equal(externalPtr.external, true)
+    })
   })
 
   describe('derefType()', function () {

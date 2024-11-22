@@ -27,12 +27,12 @@
   "main": "./lib/ref.js",
   "scripts": {
     "docs": "node docs/compile",
-    "test": "node --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict"
+    "test": "node --trace-deprecation --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict"
   },
   "dependencies": {
     "bindings": "1",
     "debug": "4",
-    "nan": "oc-soft/npm-nan#main"
+    "nan": "latest"
   },
   "devDependencies": {
     "dox": "0.9.0",

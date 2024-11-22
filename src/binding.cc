@@ -8,13 +8,11 @@
 
 #ifdef _WIN32
   #define __alignof__ __alignof
-  #define snprintf(buf, bufSize, format, arg) _snprintf_s(buf, bufSize, _TRUNCATE, format, arg)
   #define strtoll _strtoi64
   #define strtoull _strtoui64
   #define PRId64 "lld"
   #define PRIu64 "llu"
 #else
-  #define __STDC_FORMAT_MACROS
   #include <inttypes.h>
 #endif
 
@@ -253,10 +251,11 @@ NAN_METHOD(WriteObject) {
   if (persistent) {
       (*pptr).Reset(val);
   } else {
-    void *user_data = NULL;
+    void *user_data = nullptr;
     Nan::Persistent<Object> p2(val);
     p2.SetWeak(user_data, write_object_cb, Nan::WeakCallbackType::kParameter);
-    std::memcpy(pptr, &p2, sizeof(Nan::Persistent<Object>));
+    std::memcpy(reinterpret_cast<void*>(pptr),
+      &p2, sizeof(Nan::Persistent<Object>));
   }
 
   info.GetReturnValue().SetUndefined();
@@ -674,11 +673,9 @@ NAN_MODULE_INIT(init) {
 
   // "sizeof" map
   Local<Object> smap = Nan::New<v8::Object>();
-  v8::Isolate *isolate = v8::Isolate::GetCurrent();
-  Local<v8::Context> ctx = isolate->GetCurrentContext();
   // fixed sizes
 #define SET_SIZEOF(name, type) \
-  smap->Set(ctx, Nan::New<v8::String>( #name ).ToLocalChecked(),\
+  Nan::Set(smap, Nan::New<v8::String>( #name ).ToLocalChecked(),\
     Nan::New<v8::Uint32>(static_cast<uint32_t>(sizeof(type))))
   SET_SIZEOF(int8, int8_t);
   SET_SIZEOF(uint8, uint8_t);
@@ -713,7 +710,7 @@ NAN_MODULE_INIT(init) {
   Local<Object> amap = Nan::New<v8::Object>();
 #define SET_ALIGNOF(name, type) \
   struct s_##name { type a; }; \
-  amap->Set(ctx, Nan::New<v8::String>( #name ).ToLocalChecked(), \
+  Nan::Set(amap, Nan::New<v8::String>( #name ).ToLocalChecked(), \
     Nan::New<v8::Uint32>(static_cast<uint32_t>(__alignof__(struct s_##name))))
   SET_ALIGNOF(int8, int8_t);
   SET_ALIGNOF(uint8, uint8_t);
@@ -742,10 +739,17 @@ NAN_MODULE_INIT(init) {
   SET_ALIGNOF(Object, Nan::Persistent<Object>);
 
   // exports
-  target->Set(ctx, Nan::New<v8::String>("sizeof").ToLocalChecked(), smap);
-  target->Set(ctx, Nan::New<v8::String>("alignof").ToLocalChecked(), amap);
-  Nan::ForceSet(target, Nan::New<v8::String>("endianness").ToLocalChecked(), Nan::New<v8::String>(CheckEndianness()).ToLocalChecked(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
-  Nan::ForceSet(target, Nan::New<v8::String>("NULL").ToLocalChecked(), WrapNullPointer(), static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  Nan::Set(target, Nan::New<v8::String>("sizeof").ToLocalChecked(), smap);
+  Nan::Set(target, Nan::New<v8::String>("alignof").ToLocalChecked(), amap);
+  Nan::DefineOwnProperty(
+    target,
+    Nan::New<v8::String>("endianness").ToLocalChecked(),
+    Nan::New<v8::String>(CheckEndianness()).ToLocalChecked(),
+    static_cast<PropertyAttribute>(ReadOnly|DontDelete));
+  Nan::DefineOwnProperty(
+    target, Nan::New<v8::String>("NULL").ToLocalChecked(),
+    WrapNullPointer(),
+    static_cast<PropertyAttribute>(ReadOnly|DontDelete));
   Nan::SetMethod(target, "address", Address);
   Nan::SetMethod(target, "hexAddress", HexAddress);
   Nan::SetMethod(target, "isNull", IsNull);
@@ -761,4 +765,4 @@ NAN_MODULE_INIT(init) {
   Nan::SetMethod(target, "reinterpret", ReinterpretBuffer);
   Nan::SetMethod(target, "reinterpretUntilZeros", ReinterpretBufferUntilZeros);
 }
-NODE_MODULE(binding, init);
+NAN_MODULE_WORKER_ENABLED(binding, init)
