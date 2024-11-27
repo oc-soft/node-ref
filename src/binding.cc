@@ -1,5 +1,5 @@
-#include <stdlib.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cerrno>
 #include <cstring>
 
 #include "node.h"
@@ -107,7 +107,7 @@ NAN_METHOD(HexAddress) {
     ptr = *ptrRef;
   }
   char strbuf[30]; /* should be plenty... */
-  snprintf(strbuf, 30, "%p", ptr);
+  std::snprintf(strbuf, 30, "%p", ptr);
 
   Local<String> val;
   if (strbuf[0] == '0' && strbuf[1] == 'x') {
@@ -439,7 +439,7 @@ NAN_METHOD(WriteInt64) {
     str = *_str;
 
     errno = 0;     /* To distinguish success/failure after call */
-    val = strtoll(str, &endptr, base);
+    val = std::strtoll(str, &endptr, base);
 
     if (endptr == str) {
       return Nan::ThrowTypeError("writeInt64: no digits we found in input String");
@@ -665,6 +665,93 @@ NAN_METHOD(ReinterpretBufferUntilZeros) {
   info.GetReturnValue().Set(WrapPointer(ptr, size));
 }
 
+/**
+ * copy from a poiner container to another pointer container
+ * info[0] - Buffer - the "dst" buffer instance to write to. The dst must contain an address to be writen into.
+ * info[1] - Buffer - the "src" buffer instance to get from. The src must contain an address to be read from.
+ * info[2] - Number - the "size" value which indicate copy size 
+ */
+NAN_METHOD(CopyMemory) {
+    Nan::HandleScope scope;
+    int state;
+    state = info.Length() > 2 ? 0 : -1;
+    if (state) {
+        Nan::ThrowError("expect arguments length greater than 2");
+    }
+    if (state == 0) {
+        state = node::Buffer::HasInstance(info[0]) ? 0 : -1;
+        if (state) {
+            Nan::ThrowError("expect 1st argument Array buffer view");
+        }
+    }
+    if (state == 0) {
+        state = node::Buffer::HasInstance(info[1]) ? 0 : -1;
+        if (state) {
+            Nan::ThrowError("expect 2nd argument Array buffer view");
+        }
+    }
+    v8::Isolate* isolate;
+    isolate = info.GetIsolate();
+    v8::Local<Context> ctx = isolate->GetCurrentContext();
+
+    if (state == 0) {
+        uint32_t size = 0;
+        v8::Maybe<uint32_t> sizeMaybe = info[2]->Uint32Value(ctx);
+        if (sizeMaybe.IsJust()) {
+            size = sizeMaybe.FromJust();
+        }
+        if (size > 0) {
+            v8::Local<v8::Value> dst = info[0];
+            v8::Local<v8::Value> src = info[1];
+            void** dstPtrRef = reinterpret_cast<void**>(
+                node::Buffer::Data(dst)); 
+            void** srcPtrRef = reinterpret_cast<void**>(
+                node::Buffer::Data(src));
+            std::memcpy(*dstPtrRef, *srcPtrRef, size);
+        } 
+    }
+}
+
+/**
+ * add displacement to external pointer
+ * info[0] - Buffer - the "pointer" buffer instance.
+ * info[1] - Number - the offset value to be added 
+ */
+NAN_METHOD(AddOffset) {
+    Nan::HandleScope scope;
+    int state;
+    state = info.Length() > 1 ? 0 : -1;
+    if (state) {
+        Nan::ThrowError("expect arguments length greater than 1");
+    }
+    if (state == 0) {
+        state = node::Buffer::HasInstance(info[0]) ? 0 : -1;
+        if (state) {
+            Nan::ThrowError("expect 1st argument Array buffer view");
+        }
+    }
+    v8::Isolate* isolate;
+    isolate = info.GetIsolate();
+    v8::Local<Context> ctx = isolate->GetCurrentContext();
+
+    if (state == 0) {
+        int32_t offset = 0;
+        v8::Maybe<int32_t> offsetMaybe = info[1]->Int32Value(ctx);
+        if (offsetMaybe.IsJust()) {
+            offset = offsetMaybe.FromJust();
+        }
+        if (offset) {
+            v8::Local<v8::Value> ptrContainer = info[0];
+            char** ptrRef = reinterpret_cast<char**>(
+                node::Buffer::Data(ptrContainer)); 
+            char* ptr = *ptrRef;
+            ptr += offset;
+            *ptrRef = ptr;
+        } 
+    }
+}
+
+
 
 } // anonymous namespace
 
@@ -764,5 +851,7 @@ NAN_MODULE_INIT(init) {
   Nan::SetMethod(target, "readCString", ReadCString);
   Nan::SetMethod(target, "reinterpret", ReinterpretBuffer);
   Nan::SetMethod(target, "reinterpretUntilZeros", ReinterpretBufferUntilZeros);
+  Nan::SetMethod(target, "copyMemory", CopyMemory);
+  Nan::SetMethod(target, "addOffset", AddOffset);
 }
 NAN_MODULE_WORKER_ENABLED(binding, init)
