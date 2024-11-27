@@ -30,8 +30,8 @@
     "test": "node --trace-deprecation --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict"
   },
   "dependencies": {
-    "bindings": "1",
-    "debug": "4",
+    "bindings": "latest",
+    "debug": "latest",
     "nan": "latest"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "highlight.js": "1",
     "jade": "1",
     "marked": "0.5.2",
-    "mocha": "*",
+    "mocha": "latest",
     "weak": "oc-soft/node-weak#master"
   }
 }
