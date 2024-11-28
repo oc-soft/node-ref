@@ -11,6 +11,8 @@
   #define __alignof__ __alignof
   #define PRId64 "lld"
   #define PRIu64 "llu"
+#else
+  #include <inttypes.h>
 #endif
 
 
