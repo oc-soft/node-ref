@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <cstdint>
 
 #include "node.h"
 #include "node_buffer.h"
@@ -8,12 +9,8 @@
 
 #ifdef _WIN32
   #define __alignof__ __alignof
-  #define strtoll _strtoi64
-  #define strtoull _strtoui64
   #define PRId64 "lld"
   #define PRIu64 "llu"
-#else
-  #include <inttypes.h>
 #endif
 
 
@@ -393,7 +390,7 @@ NAN_METHOD(ReadInt64) {
   if (val < JS_MIN_INT || val > JS_MAX_INT) {
     // return a String
     char strbuf[128];
-    snprintf(strbuf, 128, "%" PRId64, val);
+    std::snprintf(strbuf, 128, "%" PRId64, val);
     rtn = Nan::New<v8::String>(strbuf).ToLocalChecked();
   } else {
     // return a Number
@@ -671,7 +668,7 @@ NAN_METHOD(ReinterpretBufferUntilZeros) {
  * info[1] - Buffer - the "src" buffer instance to get from. The src must contain an address to be read from.
  * info[2] - Number - the "size" value which indicate copy size 
  */
-NAN_METHOD(CopyMemory) {
+NAN_METHOD(CopyMemoryI) {
     Nan::HandleScope scope;
     int state;
     state = info.Length() > 2 ? 0 : -1;
@@ -851,7 +848,7 @@ NAN_MODULE_INIT(init) {
   Nan::SetMethod(target, "readCString", ReadCString);
   Nan::SetMethod(target, "reinterpret", ReinterpretBuffer);
   Nan::SetMethod(target, "reinterpretUntilZeros", ReinterpretBufferUntilZeros);
-  Nan::SetMethod(target, "copyMemory", CopyMemory);
+  Nan::SetMethod(target, "copyMemory", CopyMemoryI);
   Nan::SetMethod(target, "addOffset", AddOffset);
 }
 NAN_MODULE_WORKER_ENABLED(binding, init)
