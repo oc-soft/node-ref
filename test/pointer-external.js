@@ -81,4 +81,13 @@ describe('pointer-external', function() {
       assert.equal(a0.address(), _a.address(true))
       assert.equal(b0.address(), _b.address(true))
   })
+  it ('expects exnternal null pointer is contains 0 filled with pointer size',
+   function() {
+     const externalNullPtr = ref.getNullPointer(true)
+     const nullPtr = ref.getNullPointer()
+     assert.equal(Buffer.isBuffer(externalNullPtr), true,
+       'expects external null pointer is buffer type')
+     assert.equal(ref.comparePointer(externalNullPtr, nullPtr), 0,
+       'expects null pointer is filled with zero') 
+  }) 
 })
