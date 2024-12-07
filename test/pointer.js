@@ -77,4 +77,25 @@ describe('pointer', function () {
 
   })
 
+  describe('compare', function() {
+    it('should not equals pointer', function() {
+      const buf1 = Buffer.alloc(ref.sizeof.pointer)
+      const buf2 = Buffer.alloc(ref.sizeof.pointer)
+      const a = Buffer.from('hello')
+      const b = Buffer.from('world')
+      buf1.writePointer(a, 0 * ref.sizeof.pointer)
+      buf2.writePointer(b, 0 * ref.sizeof.pointer)
+      assert.notEqual(ref.comparePointer(buf1, buf2), 0,
+        'expect two pointers do not equals 0')
+    })
+    it('should equals pointer', function() {
+      const buf1 = Buffer.alloc(ref.sizeof.pointer)
+      const a = Buffer.from('hello')
+      buf1.writePointer(a, 0 * ref.sizeof.pointer)
+      buf1.writePointer(a, 1 * ref.sizeof.pointer)
+      assert.notEqual(ref.comparePointer(
+        buf1, buf1, 0, 1 * ref.sizeof.pointer), 0,
+        'expect two pointers equals 0')
+    })
+  })
 })
