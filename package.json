@@ -17,7 +17,7 @@
     "byte",
     "64"
   ],
-  "version": "1.4.1",
+  "version": "2.0.0",
   "license": "MIT",
   "author": "Nathan Rajlich <nathan@tootallnate.net> (http://tootallnate.net)",
   "repository": {
@@ -27,6 +27,7 @@
   "main": "./lib/ref.js",
   "scripts": {
     "docs": "node docs/compile",
+    "type-check": "tsc --noEmit lib/ref.d.ts",
     "test": "node --trace-deprecation --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict"
   },
   "dependencies": {
@@ -35,11 +36,13 @@
     "nan": "latest"
   },
   "devDependencies": {
+    "@types/node": "latest",
     "dox": "0.9.0",
     "highlight.js": "1",
     "jade": "1",
     "marked": "0.5.2",
     "mocha": "latest",
+    "typescript": "latest",
     "weak": "oc-soft/node-weak#master"
   }
 }
