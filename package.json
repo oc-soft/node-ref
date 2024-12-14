@@ -25,10 +25,12 @@
     "url": "git://github.com/TooTallNate/ref.git"
   },
   "main": "./lib/ref.js",
+  "types": "./lib/ref.d.ts",
   "scripts": {
     "docs": "node docs/compile",
     "type-check": "tsc --noEmit lib/ref.d.ts",
-    "test": "node --trace-deprecation --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict"
+    "test": "node --trace-deprecation --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict",
+    "test-ts": "ts-node --project test-ts/tsconfig.json test-ts/ref.ts"
   },
   "dependencies": {
     "bindings": "latest",
@@ -36,12 +38,14 @@
     "nan": "latest"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "latest",
     "dox": "0.9.0",
     "highlight.js": "1",
     "jade": "1",
     "marked": "0.5.2",
     "mocha": "latest",
+    "ts-node": "latest",
     "typescript": "latest",
     "weak": "oc-soft/node-weak#master"
   }
