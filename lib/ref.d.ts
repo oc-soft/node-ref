@@ -4,6 +4,53 @@
  * manage primitive type size
  */
 type TypeNumber = {
+  void: number
+  int8: number
+  uint8: number
+  int16: number
+  uint16: number
+  int32: number
+  uint32: number
+  int64: number
+  uint64: number
+  float: number
+  double: number
+  bool: number
+  byte: number
+  char: number
+  uchar: number
+  short: number
+  ushort: number
+  int: number
+  uint: number
+  long: number
+  ulong: number
+  longlong: number
+  ulonglong: number
+  pointer: number
+  size_t: number
+  wchar_t: number
+}
+
+type SizeOf = TypeNumber
+
+declare const sizeof: SizeOf
+
+type AlignOf = TypeNumber
+
+declare const alignof: AlignOf
+
+export interface TypeBase {
+  size: number
+  indirection: number
+  get(buffer: Buffer, offset?: number): any
+  set(buffer: Buffer, offset: number, val: any): void
+  name?: string
+  external?: boolean   
+}
+
+
+type Types = {
   int8: TypeBase
   uint8: TypeBase
   int16: TypeBase
@@ -32,53 +79,6 @@ type TypeNumber = {
   Object: TypeBase 
   CString: TypeBase
   Utf8String: TypeBase
-}
-
-type SizeOf = TypeNumber
-
-declare const sizeof: SizeOf
-
-type AlignOf = TypeNumber
-
-declare const alignof: AlignOf
-
-interface TypeBase {
-  size: number
-  indirection: number
-  get(buffer: Buffer, offset?: number): any
-  set(buffer: Buffer, offset: number, val: any): void
-  name?: string
-  external?: boolean   
-}
-
-
-type Types = {
-  void: TypeBase,
-  int8: number
-  uint8: number
-  int16: number
-  uint16: number
-  int32: number
-  uint32: number
-  int64: number
-  uint64: number
-  float: number
-  double: number
-  bool: number
-  byte: number
-  char: number
-  uchar: number
-  short: number
-  ushort: number
-  int: number
-  uint: number
-  long: number
-  ulong: number
-  longlong: number
-  ulonglong: number
-  pointer: number
-  size_t: number
-  wchar_t: number
 }
 
 
@@ -604,7 +604,7 @@ export function alloc (typeObj: TypeBase, value?: any) :Buffer
  */
 export function allocCString(
   str: string,
-  encoding: string): Buffer 
+  encoding?: string): Buffer 
 
 /**
  * Writes the given string as a C String (NULL terminated) to the given buffer
