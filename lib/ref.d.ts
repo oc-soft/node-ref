@@ -1,4 +1,6 @@
-/// <reference types="node" />
+import type { Buffer } from 'node:buffer'
+
+export type { default as BufferRef } from './buffer'
 
 /**
  * manage primitive type size
@@ -243,8 +245,8 @@ export function readInt64BE(
  * ```
  *
  * @param {Buffer} buffer The buffer to read a Buffer from.
- * @param {Number} offset The offset to begin reading from.
- * @return {Number|String} The Number or String that was read from _buffer_.
+ * @param {number} offset The offset to begin reading from.
+ * @return {number|string} The Number or String that was read from _buffer_.
  */
 export function readInt64LE(buffer: Buffer,
   offset: number): number | string
@@ -358,8 +360,8 @@ export function writeUInt64LE(buffer: Buffer,
  * ```
  *
  * @param {Buffer} buffer The buffer to read a Buffer from.
- * @param {Number} offset The offset to begin reading from.
- * @return {Number|String} The Number or String that was read from _buffer_.
+ * @param {number} offset The offset to begin reading from.
+ * @return {number|string} The Number or String that was read from _buffer_.
  */
 export function readUInt64BE(buffer: Buffer,
   offset: number): string | string
@@ -381,8 +383,8 @@ export function readUInt64BE(buffer: Buffer,
  * ```
  *
  * @param {Buffer} buffer The buffer to read a Buffer from.
- * @param {Number} offset The offset to begin reading from.
- * @return {Number|String} The Number or String that was read from _buffer_.
+ * @param {number} offset The offset to begin reading from.
+ * @return {number|string} The Number or String that was read from _buffer_.
  */
 export function readUInt64LE(buffer: Buffer,
   offset: number): number | string
@@ -561,9 +563,9 @@ export function get(
  * than calling the `set()` function if the indirection is greater than 1.
  *
  * @param {Buffer} buffer The Buffer instance to write to.
- * @param {Number} offset The offset on the Buffer to start writing to.
- * @param {?} value The value to write to the Buffer instance.
- * @param {Object|String} type (optional) The "type" object to use when reading. Defaults to calling `getType()` on the buffer.
+ * @param {number} offset The offset on the Buffer to start writing to.
+ * @param {any} value The value to write to the Buffer instance.
+ * @param {object|string} type (optional) The "type" object to use when reading. Defaults to calling `getType()` on the buffer.
  */
 export function set(
   buffer: Buffer,
@@ -598,8 +600,8 @@ export function alloc (typeObj: TypeBase, value?: any) :Buffer
  * 'hello world\u0000'
  * ```
  *
- * @param {String} string The JavaScript string to be converted to a C string.
- * @param {String} encoding (optional) The encoding to use for the C string. Defaults to __'utf8'__.
+ * @param {string} string The JavaScript string to be converted to a C string.
+ * @param {string} encoding (optional) The encoding to use for the C string. Defaults to __'utf8'__.
  * @return {Buffer} The new `Buffer` instance with the specified String wrtten to it, and a trailing NUL byte.
  */
 export function allocCString(
@@ -614,9 +616,9 @@ export function allocCString(
  * proper length.
  *
  * @param {Buffer} buffer The Buffer instance to write to.
- * @param {Number} offset The offset of the buffer to begin writing at.
- * @param {String} string The JavaScript String to write that will be written to the buffer.
- * @param {String} encoding (optional) The encoding to read the C string as. Defaults to __'utf8'__.
+ * @param {number} offset The offset of the buffer to begin writing at.
+ * @param {string} string The JavaScript String to write that will be written to the buffer.
+ * @param {string} encoding (optional) The encoding to read the C string as. Defaults to __'utf8'__.
  */
 export function writeCString(
   buffer: Buffer,
@@ -700,8 +702,8 @@ export function reinterpret (
  * being garbage collected.
  *
  * @param {Buffer} buffer A Buffer instance to base the returned Buffer off of.
- * @param {Number} size The number of sequential, aligned `NULL` bytes are required to terminate the buffer.
- * @param {Number} offset The offset of the Buffer to begin from.
+ * @param {number} size The number of sequential, aligned `NULL` bytes are required to terminate the buffer.
+ * @param {number} offset The offset of the Buffer to begin from.
  * @return {Buffer} A new Buffer instance with the same memory address as _buffer_, and a variable `length` that is terminated by _size_ NUL bytes.
  */
 

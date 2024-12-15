@@ -30,7 +30,7 @@
     "docs": "node docs/compile",
     "type-check": "tsc --noEmit lib/ref.d.ts",
     "test": "node --trace-deprecation --expose-gc node_modules/mocha/lib/cli/cli.js --reporter spec --use_strict",
-    "test-ts": "ts-node --project test-ts/tsconfig.json test-ts/ref.ts"
+    "test-ts": "ts-node --project test-ts/tsconfig.json test-ts/ref-t.ts"
   },
   "dependencies": {
     "bindings": "latest",
