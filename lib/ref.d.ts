@@ -53,6 +53,7 @@ export interface TypeBase {
 
 
 type Types = {
+  void: TypeBase
   int8: TypeBase
   uint8: TypeBase
   int16: TypeBase
