@@ -52,7 +52,7 @@ export interface TypeBase {
 }
 
 
-type Types = {
+export type Types = {
   void: TypeBase
   int8: TypeBase
   uint8: TypeBase
@@ -491,7 +491,7 @@ export function getNullPointer(external: boolean): Uint8Array
  * @param {boolean=} external The flag to specify external reference which is out of sandbox space.
  * @return {TypeBase} The new "type" object with its `indirection` incremented by 1.
  */
-export function refType(typeObj: string,
+export function refType(typeObj: string | TypeBase,
   external?: boolean): TypeBase
 
 /**
