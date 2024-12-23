@@ -725,8 +725,8 @@ export function readFromPointer(
  * compare two pointer buffer
  */
 export function comparePointer(
-  pointerBuffer1: Buffer,
-  pointerBuffer2: Buffer,
+  pointerBuffer1: Uint8Array | Buffer,
+  pointerBuffer2: Uint8Array | Buffer,
   offset1?: number,
   offset2?: number): number
 
