@@ -36,11 +36,11 @@ type TypeNumber = {
 
 type SizeOf = TypeNumber
 
-declare const sizeof: SizeOf
+export const sizeof: SizeOf
 
 type AlignOf = TypeNumber
 
-declare const alignof: AlignOf
+export const alignof: AlignOf
 
 export interface TypeBase {
   size: number
