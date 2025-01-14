@@ -175,7 +175,7 @@ inline Local<Value> WrapPointer(char *ptr, size_t length) {
  */
 
 inline Local<Value> WrapNullPointer() {
-  return WrapPointer((char*)NULL, sizeof(void*));
+  return WrapPointer((char*)NULL, 0);
 }
 
 /*
