@@ -13,4 +13,9 @@ describe('isNull', function () {
     assert.strictEqual(false, ref.isNull(buf))
   })
 
+  it('should return "true" for a bufffer containing null', function() {
+    const buf = Buffer.alloc(ref.sizeof.pointer * 2, 0)
+    assert.strictEqual(true, ref.containsNullPointer(buf, ref.sizeof.pointer))
+  })
+
 })

@@ -478,6 +478,14 @@ export function getNullPointer(external: boolean): Uint8Array
 
 
 /**
+ * check buffer contains null pointer (filled 0 with pointer length).
+ *
+ * @param {Uint8Array} buf - the buffer is checked whether contains null.
+ * @param {number=} offset - address offset to be checked
+ */
+export function containsNullPointer(buf: Uint8Array, offset?: number): boolean
+
+/**
  * Returns a new clone of the given "type" object, with its
  * `indirection` level incremented by **1**.
  *
